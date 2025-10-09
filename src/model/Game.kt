@@ -5,7 +5,7 @@ typealias Score = Map<Player?, Int>
 data class Game(
     val board: Board? = null,
     val firstPlayer: Player = Player.P1,
-    val score: Score = (Player.entries + null).associateWith { 0 }
+    val score: Score = mapOf(Player.P1 to 2, Player.P2 to 2, null to 0)
 )
 
 private fun Score.advance(player: Player?) =
@@ -14,16 +14,16 @@ private fun Score.advance(player: Player?) =
 fun Game.newBoard() = Game(
     board = Board(turn = firstPlayer),
     firstPlayer = firstPlayer.other,
-    score = if (board is BoardRun) score.advance(board.turn.other) else score
+    score = mapOf(Player.P1 to 2, Player.P2 to 2, null to 0)
 )
 
 fun Game.play(pos: Position): Game {
-    checkNotNull(board) { "No board" }
-    val board = board.play(pos)
+    checkNotNull(board) { "Sem tabuleiro" }
+    val boardAfter = board.play(pos)
     return copy(
-        board = board,
-        score = when (board) {
-            is BoardWin -> score.advance(board.winner)
+        board = boardAfter,
+        score = when (boardAfter) {
+            is BoardWin -> score.advance(boardAfter.winner)
             is BoardDraw -> score.advance(null)
             is BoardRun -> score
         }

@@ -38,10 +38,8 @@ private fun BoardRun.canCapture(pos: Position, player: Player, dir: Pair<Int,Int
 fun Board.play(pos: Position): Board {
     require(this is BoardRun) { "Game is over" }
     require(isValid(pos, turn)) { "Invalid move $pos" }
-
     val newMoves = moves.toMutableMap()
     newMoves[pos] = turn
-
     for (d in directions) {
         if (canCapture(pos, turn, d)) {
             var r = pos.row + d.first
@@ -52,11 +50,9 @@ fun Board.play(pos: Position): Board {
             }
         }
     }
-
     val nextTurn = turn.other
     val remaining = Position.values - newMoves.keys
     val hasNext = remaining.any { BoardRun(nextTurn, newMoves).isValid(it, nextTurn) }
-
     return when {
         remaining.isEmpty() -> decideWinner(newMoves)
         !hasNext -> decideWinner(newMoves)
@@ -77,11 +73,11 @@ private fun decideWinner(moves: Moves): Board {
 
 // Impressão do tabuleiro
 fun Board.print(valid: List<Position> = emptyList()) {
-    println("  a b c d e f g h")
+    println(" a b c d e f g h")
     for (r in 0 until SIZE) {
-        print("${r+1} ")
+        print("${r + 1} ")
         for (c in 0 until SIZE) {
-            val pos = Position(r,c)
+            val pos = Position(r, c)
             val cell = when (moves[pos]) {
                 Player.P1 -> "@"
                 Player.P2 -> "#"

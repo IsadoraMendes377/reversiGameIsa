@@ -14,23 +14,36 @@ object GameSerializer : Serializer<Game> {
     override fun serialize(data: Game): String {
         val score = data.score.map { "${it.key}:${it.value}" }.joinToString(" ")
         val board = data.board?.let { BoardSerializer.serialize(it) } ?: ""
-        return "${data.firstPlayer} # $score # $board"
+        return "${data.firstPlayer.name} # $score # $board"
     }
 
     override fun deserialize(text: String): Game {
         val parts = text.split(" # ")
         require(parts.size == 3) { "Invalid Game serialization: $text" }
 
-        val (player, score, board) = parts
-        val firstPlayer = Player.valueOf(player)
+        val (playerStr, scoreStr, boardStr) = parts
+        val firstPlayer = parsePlayer(playerStr)
 
-        val scoreMap: Score = score.split(" ").associate {
+        val scoreMap: Score = scoreStr.split(" ").associate {
             val (ply, cnt) = it.split(":")
-            val key = if (ply == "null") null else Player.valueOf(ply)
+            val key = when (ply) {
+                "null" -> null
+                else -> parsePlayer(ply)
+            }
             key to cnt.toInt()
         }
 
-        val boardData = if (board.isNotEmpty()) BoardSerializer.deserialize(board) else null
+        val boardData = if (boardStr.isNotEmpty()) BoardSerializer.deserialize(boardStr) else null
         return Game(boardData, firstPlayer, scoreMap)
     }
+
+    /**
+     * Permite compatibilidade com ficheiros antigos ('@', '#') e novos ('P1', 'P2').
+     */
+    private fun parsePlayer(value: String): Player =
+        when (value.uppercase()) {
+            "P1", "@" -> Player.P1
+            "P2", "#" -> Player.P2
+            else -> error("Invalid player value: $value")
+        }
 }

@@ -7,11 +7,12 @@ import storage.Serializer
  * Serializa e desserializa o estado do tabuleiro de Reversi.
  *
  * Formatos de exemplo:
- *   RUN P1 | 27:@ 28:# ...
- *   WIN P2 | 15:# 16:@ ...
- *   DRAW   |  ...
+ *   RUN P1 | 27:P1 28:P2 ...
+ *   WIN P2 | 15:P2 16:P1 ...
+ *   DRAW   | ...
  */
 object BoardSerializer : Serializer<Board> {
+
     override fun serialize(data: Board): String {
         val moves = data.moves.map { "${it.key.index}:${it.value.name}" }.joinToString(" ")
         return when (data) {
@@ -31,14 +32,24 @@ object BoardSerializer : Serializer<Board> {
             if (plays.isEmpty()) emptyMap()
             else plays.split(" ").associate {
                 val (pos, ply) = it.split(":")
-                Position(pos.toInt()) to Player.valueOf(ply)
+                Position(pos.toInt()) to parsePlayer(ply)
             }
 
         return when (type) {
-            "RUN" -> BoardRun(Player.valueOf(player!!), moves)
-            "WIN" -> BoardWin(Player.valueOf(player!!), moves)
+            "RUN" -> BoardRun(parsePlayer(player!!), moves)
+            "WIN" -> BoardWin(parsePlayer(player!!), moves)
             "DRAW" -> BoardDraw(moves)
             else -> error("Invalid board state: $type")
         }
     }
+
+    /**
+     * Permite ler tanto valores antigos ('@', '#') como novos ('P1', 'P2').
+     */
+    private fun parsePlayer(value: String): Player =
+        when (value.uppercase()) {
+            "P1", "@" -> Player.P1
+            "P2", "#" -> Player.P2
+            else -> error("Invalid player value: $value")
+        }
 }
