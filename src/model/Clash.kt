@@ -30,15 +30,9 @@ fun Clash.start(name: Name): Clash =
 /** join an existing clash as opposing side */
 fun Clash.join(name: Name): Clash {
     val existingGame = checkNotNull(storage.read(name)) { "Clash $name not found" }
-    val board = existingGame.board
-    val firstTurn = when (board) {
-        is BoardRun -> board.turn
-        is BoardEnd -> existingGame.firstPlayer
-        else -> existingGame.firstPlayer
-    }
-    // o jogador que entra joga com a cor oposta
-    val joiner = firstTurn.other
-    return ClashRun(storage, name, existingGame, joiner)
+    val creatorColor = existingGame.firstPlayer
+    val joinerColor = creatorColor.other
+    return ClashRun(storage, name, existingGame, joinerColor)
 }
 
 
