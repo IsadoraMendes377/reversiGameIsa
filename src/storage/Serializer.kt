@@ -1,6 +1,9 @@
 package storage
 
-interface Serializer<Data> {
-    fun serialize(data: Data): String
-    fun deserialize(text: String): Data
+/**
+ * Interface genérica de serialização e desserialização de objetos.
+ */
+interface Serializer<T> {
+    fun serialize(obj: T): String
+    fun deserialize(data: String): T
 }
