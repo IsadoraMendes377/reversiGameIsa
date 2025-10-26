@@ -2,18 +2,29 @@ package ui
 
 import model.*
 
-private val sepLine = "  " + (('a' until ('a' + BOARD_DIM)).joinToString(" ") { " " })
-
 fun Clash.show(targetsOn: Boolean = false) {
-    val cr = this as? ClashRun ?: return
-    println("Clash: ${cr.name} you are ${cr.sidePlayer}")
-    cr.game.show(targetsOn)
+    when (this) {
+        is LocalClash -> {
+            val playerSymbol = if (myCell == Cell.BLACK) "#" else "@"
+            println("You are player $playerSymbol in local game.")
+        }
+        is ClashRun -> {
+            val playerSymbol = if (sidePlayer == Player.BLACK) "#" else "@"
+            println("You are player $playerSymbol in ${name.value}.")
+        }
+    }
+    (this as? ClashRun)?.game?.show(targetsOn)
+    (this as? LocalClash)?.game?.show(targetsOn)
 }
+
 
 fun Game.show(targetsOn: Boolean = false) {
     board?.show(targetsOn)
 }
 
+/**
+ * Mostra apenas os contadores (usado pelo comando SCORE).
+ */
 fun Game.showScore() {
     val b = board
     if (b == null) {
@@ -26,8 +37,7 @@ fun Game.showScore() {
         is BoardEnd -> b.blackCount to b.whiteCount
         else -> 0 to 0
     }
-    println("${Cell.BLACK.symbol} = $blackCnt")
-    println("${Cell.WHITE.symbol} = $whiteCnt")
+    println("# = $blackCnt | @ = $whiteCnt")
 }
 
 
@@ -41,12 +51,15 @@ fun Board.show(targetsOn: Boolean = false) {
 private fun showRun(br: BoardRun, targetsOn: Boolean) {
     val occ = br.occupation
     val targets = if (targetsOn) validMoves(occ, br.turn) else emptySet()
-    // header
+
+    // Cabeçalho
     print("  ")
-    for (c in 0 until BOARD_DIM) print("${('a' + c)} ")
+    for (c in 0 until BOARD_DIM) print("${('A' + c)} ")
     println()
+
+    // Linhas numeradas
     for (r in 0 until BOARD_DIM) {
-        print("${r + 1} ".padStart(2))
+        print("${r + 1} ")
         for (c in 0 until BOARD_DIM) {
             val pos = Position(r * BOARD_DIM + c)
             val ch = when {
@@ -58,17 +71,22 @@ private fun showRun(br: BoardRun, targetsOn: Boolean) {
         }
         println()
     }
+
+    // Contadores e turno
     val (bCnt, wCnt) = countCells(occ)
-    println("Turn: ${br.turn}  Score: ${Cell.BLACK.symbol}=$bCnt ${Cell.WHITE.symbol}=$wCnt")
+    println("# = $bCnt | @ = $wCnt")
+    println("Turn: ${br.turn.cell.symbol}")
 }
 
 private fun showEnd(be: BoardEnd) {
-    // show final occupation grid
+    // Cabeçalho
     print("  ")
-    for (c in 0 until BOARD_DIM) print("${('a' + c)} ")
+    for (c in 0 until BOARD_DIM) print("${('A' + c)} ")
     println()
+
+    // Linhas numeradas
     for (r in 0 until BOARD_DIM) {
-        print("${r + 1} ".padStart(2))
+        print("${r + 1} ")
         for (c in 0 until BOARD_DIM) {
             val pos = Position(r * BOARD_DIM + c)
             val ch = be.occupation[pos]?.symbol ?: '.'
@@ -76,5 +94,7 @@ private fun showEnd(be: BoardEnd) {
         }
         println()
     }
-    println("Game over: #=${be.blackCount} @=${be.whiteCount}")
+
+    // Resultado final
+    println("Game over: #=${be.blackCount} | @=${be.whiteCount}")
 }

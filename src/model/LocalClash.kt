@@ -36,7 +36,9 @@ class LocalClash(
 
     /** Mostra o tabuleiro e informação básica. */
     fun show(targetsOn: Boolean = false) {
-        println("Local game — you are ${if (myCell == Cell.BLACK) "BLACK (#)" else "WHITE (@)"}")
+        val playerSymbol = if (myCell == Cell.BLACK) "#" else "@"
+        println("You are player $playerSymbol in local game.")
         game.show(targetsOn)
     }
+
 }
